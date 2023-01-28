@@ -1,0 +1,38 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: myapps
+spec:
+  generators:
+    - pullRequest:
+        github:
+          owner: aeonzh
+          repo: argocd-lab
+          # Reference to a Secret containing an access token. (optional)
+          # tokenRef:
+          #   secretName: github-token
+          #   key: token
+          # (optional) use a GitHub App to access the API instead of a PAT.
+          # appSecretName: github-app-repo-creds
+          # Labels is used to filter the PRs that you want to target. (optional)
+          labels:
+            - preview
+        requeueAfterSeconds: 1800
+  template:
+    metadata:
+      name: pr-{{number}}-myapp
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/aeonzh/argocd-lab.git
+        targetRevision: HEAD
+        path: app
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "pr-{{number}}-myapp"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
