@@ -17,19 +17,21 @@ spec:
           # Labels is used to filter the PRs that you want to target. (optional)
           labels:
             - preview
-        requeueAfterSeconds: 1800
+        requeueAfterSeconds: 60
   template:
     metadata:
-      name: pr-{{number}}-myapp
+      name: pr-{{number}}-{{branch}}
     spec:
       project: default
       source:
         repoURL: https://github.com/aeonzh/argocd-lab.git
         targetRevision: HEAD
         path: app
+        helm:
+          releaseName: "{{ head_short_sha }}"
       destination:
         server: https://kubernetes.default.svc
-        namespace: "pr-{{number}}-myapp"
+        namespace: "pr-{{number}}-{{branch}}"
       syncPolicy:
         automated:
           prune: true
